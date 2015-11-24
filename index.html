@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head></head>
+  <body>
+    <script type="text/javascript" src="http://fb.me/react-0.12.2.js"></script>
+    <script type="text/javascript" src="http://fb.me/JSXTransformer-0.12.2.js"></script>
+    <script src="flux-react.js"></script>
+    <script type="text/jsx">
+      var Actions = flux.createActions(['addItem']);
+
+      var Store = flux.createStore({
+        lists: [],
+        actions: [
+          Actions.addItem
+        ],
+        addItem: function (item) {
+          this.lists.push(item);
+          this.emit('lists.add');
+        },
+        exports: {
+          getLists: function () {
+            return this.lists;
+          }
+        }
+      });
+
+      var ComponentList = React.createClass({
+        getInitialState: function () {
+          return {
+            lists: Store.getLists()
+          };
+        },
+        triggerAction: function () {
+          Actions.addItem("Item added");
+        },
+        onChange: function () {
+          this.setState({
+            lists: Store.getLists()
+          });
+        },
+        componentWillMount: function () {
+          Store.on('lists.add', this.onChange);
+        },
+        componentWillUnmount: function () {
+          Store.off('lists.add', this.onChange);
+        },
+        render: function () {
+          return(
+            <div>
+              <button onClick={this.triggerAction}>Click</button>
+              <br/><br/>
+              {JSON.stringify(this.state.lists)}
+            </div>
+          );
+        }
+      });
+      ReactDOM.renderComponent(<ComponentList />, document.body);
+    </script>
+  </body>
+</html>
